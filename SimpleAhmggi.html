@@ -23,30 +23,34 @@
       width: 100%; 
       max-width: 480px; 
     }
-    h1 { 
-      text-align: center; 
-      margin: 0; 
-      padding: 12px 0 8px;
-      font-size: 20px;
-      color: #2c3e50; 
-    }
-    .app-header {
-      text-align: center;
-      font-size: 15px;
-      font-weight: bold;
-      color: #34495e;
-      padding: 14px 0 4px;
-      letter-spacing: 0.3px;
-    }
 
-    /* 제목 자리를 대신하는 단어장 선택 드롭다운 */
+    /* 제목 자리를 대신하는 단어장 선택 드롭다운 영역 */
     .notebook-select-wrap {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
-      padding: 10px 4px 8px;
+      gap: 8px;
+      padding: 12px 4px 8px;
     }
+    
+    /* 메인 화면(index.html) 이동 홈 버튼 스타일 */
+    .btn-home {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      font-size: 16px;
+      padding: 4px 8px;
+      background-color: #ffffff;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      flex-shrink: 0;
+      transition: background-color 0.15s ease;
+    }
+    .btn-home:active {
+      background-color: #e2e8f0;
+    }
+
     .nb-emoji {
       font-size: 18px;
       flex-shrink: 0;
@@ -58,7 +62,7 @@
       border: none;
       background: transparent;
       padding: 4px 2px;
-      max-width: 78vw;
+      max-width: 70vw;
       text-align: center;
       cursor: pointer;
     }
@@ -416,9 +420,9 @@
 </head>
 <body>
   <div class="container">
-    <div class="app-header">📚 SimpleAhmggi</div>
     <div class="top-bar" id="topBar">
       <div class="notebook-select-wrap">
+        <a href="./index.html" class="btn-home" title="메인 화면으로 이동">🏠</a>
         <span class="nb-emoji">📝</span>
         <select id="notebookSelect" onchange="handleNotebookSelect(this.value)"></select>
       </div>
@@ -701,9 +705,6 @@
     });
 
     // ---------- 고유 ID 생성 ----------
-    // 모든 단어장을 통틀어 현재까지 사용된 가장 큰 id를 찾은 뒤,
-    // 그보다 큰 값을 순서대로 발급해서 절대 겹치지 않도록 함
-    // (Date.now()만 쓰면 아주 빠르게 연속으로 추가할 때 겹칠 수 있음)
     function nextIds(count) {
       let maxId = Date.now();
       Object.values(notebooks).forEach(list => {
@@ -740,7 +741,6 @@
       if (willShow) document.getElementById('bulkInput').focus();
     }
 
-    // 한 줄을 [단어, 뜻]으로 분리. 탭(엑셀/시트 복사) > " / " > "|" > 공백 2칸 이상 순으로 시도
     function parseBulkLine(line) {
       let parts = null;
       if (line.includes('\t')) {
@@ -764,7 +764,6 @@
       const lines = textarea.value.split('\n');
       const words = getWords();
 
-      // 파싱에 성공할 수 있는 최대 개수만큼 미리 고유 id를 발급해둠
       const ids = nextIds(lines.length || 1);
       let idPointer = 0;
       let added = 0;
@@ -871,7 +870,6 @@
       render();
     }
 
-    // 페이지 로드 시 저장된 정렬/숨기기 설정을 컨트롤 UI에 반영
     function initSortAndHideControls() {
       document.getElementById('sortField').value = sortField;
       updateSortDirLabel();
@@ -880,7 +878,6 @@
     }
 
     function normalizeWords(arr) {
-      // 원본에 id가 있으면 그대로 쓰고, 없는 것들만 모아서 한번에 안전하게 새 id 발급
       const missingCount = arr.filter(w => !w.id).length;
       const freshIds = missingCount > 0 ? nextIds(missingCount) : [];
       let freshPointer = 0;
@@ -900,8 +897,6 @@
       const jsonStr = JSON.stringify(words, null, 2);
       const blob = new Blob([jsonStr], { type: 'application/json' });
 
-      // 1순위: iOS/iPadOS(사파리, 아이패드용 크롬 등 WebKit 기반 브라우저 전반)에서
-      // 가장 안정적으로 동작하는 공유 시트(Web Share API)를 우선 시도
       const canUseShare = navigator.canShare && (() => {
         try {
           const testFile = new File([blob], fileName, { type: 'application/json' });
@@ -920,12 +915,10 @@
           });
           return;
         } catch (err) {
-          // 사용자가 공유를 취소한 경우 등은 조용히 무시하고 아래 방식으로 폴백
           if (err && err.name === 'AbortError') return;
         }
       }
 
-      // 2순위: 일반 브라우저(안드로이드 크롬, 데스크탑 등)용 Blob 다운로드 방식
       const url = URL.createObjectURL(blob);
       const downloadAnchor = document.createElement('a');
       downloadAnchor.href = url;
@@ -935,20 +928,16 @@
       downloadAnchor.remove();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
 
-      // 다운로드가 아니라 새 탭에서 열리는 경우를 대비한 안내
       alert('저장이 자동으로 시작되지 않으면, 새로 열린 화면에서 공유 버튼(⬆️)을 눌러 "파일에 저장"을 선택해주세요.');
     }
 
     // ---------- 파일 불러오기 (json / txt / csv / xlsx / xls 공통 처리) ----------
-
-    // 문자열 하나를 확실한 단어장으로 등록
     function finishImport(fileName, importedWordsRaw) {
       if (!importedWordsRaw || importedWordsRaw.length === 0) {
         alert('가져올 수 있는 단어를 찾지 못했습니다.\n파일 형식을 확인해주세요.');
         return;
       }
 
-      // 파일명에서 확장자와 날짜 접미사를 제거해 단어장 이름으로 사용
       let baseName = fileName.replace(/\.[^.]+$/, '').replace(/_\d{4}-\d{2}-\d{2}$/, '');
       let notebookName = baseName || '불러온 단어장';
       const normalized = normalizeWords(importedWordsRaw);
@@ -972,7 +961,6 @@
       alert(`'${notebookName}' 단어장을 불러왔습니다! (${normalized.length}개)`);
     }
 
-    // 첫 행이 "단어/뜻", "word/meaning" 같은 헤더인지 판별
     function isHeaderRow(word, meaning) {
       const w = String(word).trim().toLowerCase();
       const m = String(meaning).trim().toLowerCase();
@@ -981,7 +969,6 @@
       return headerWords.includes(w) && headerMeanings.includes(m);
     }
 
-    // 2차원 배열(행x열) -> {word, meaning} 배열. xlsx/csv에서 공통으로 사용
     function rowsToWords(rows) {
       const result = [];
       rows.forEach((row, idx) => {
@@ -989,13 +976,11 @@
         const word = (row[0] !== undefined && row[0] !== null) ? String(row[0]).trim() : '';
         const meaning = (row[1] !== undefined && row[1] !== null) ? String(row[1]).trim() : '';
         if (!word || !meaning) return;
-        if (idx === 0 && isHeaderRow(word, meaning)) return; // 헤더 행 건너뛰기
+        if (idx === 0 && isHeaderRow(word, meaning)) return;
         result.push({ word, meaning });
       });
       return result;
     }
-
-    // 한 줄을 [단어, 뜻]으로 분리 (txt 불러오기용) — parseBulkLine 함수를 그대로 재사용
 
     function parseTxtText(text) {
       const result = [];
@@ -1010,7 +995,6 @@
       return result;
     }
 
-    // 쉼표(,)로 구분된 CSV 텍스트를 2차원 배열로 변환 (따옴표로 감싼 필드의 쉼표/줄바꿈도 처리)
     function parseCSV(text) {
       const rows = [];
       let row = [];
@@ -1026,7 +1010,7 @@
         } else {
           if (char === '"') { inQuotes = true; }
           else if (char === ',') { row.push(field); field = ''; }
-          else if (char === '\r') { /* \n과 함께 처리되므로 무시 */ }
+          else if (char === '\r') { /* 무시 */ }
           else if (char === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
           else { field += char; }
         }
