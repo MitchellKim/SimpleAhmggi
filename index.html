@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>작은 도구상자</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%23FBF8F1'/%3E%3Crect x='18' y='14' width='64' height='72' rx='4' fill='%23FFFFFF' stroke='%2323262B' stroke-width='3'/%3E%3Cline x1='30' y1='34' x2='70' y2='34' stroke='%23E4DFD2' stroke-width='4'/%3E%3Cline x1='30' y1='48' x2='70' y2='48' stroke='%23E4DFD2' stroke-width='4'/%3E%3Cline x1='30' y1='62' x2='58' y2='62' stroke='%23E4DFD2' stroke-width='4'/%3E%3Ccircle cx='50' cy='14' r='6' fill='%23E2624F'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #FBF8F1;
+    --paper-card: #FFFFFF;
+    --ink: #23262B;
+    --ink-soft: #6B6558;
+    --line: #E4DFD2;
+    --accent-yellow: #FFCF3F;
+    --accent-teal: #2F6F62;
+    --accent-coral: #E2624F;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: var(--ink);
+    background-color: var(--paper);
+    background-image: repeating-linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent 35px,
+      var(--line) 35px,
+      var(--line) 36px
+    );
+    min-height: 100vh;
+    padding: 0 20px 60px;
+  }
+  .wrap {
+    max-width: 880px;
+    margin: 0 auto;
+  }
+
+  /* ---------- 헤더 ---------- */
+  header {
+    padding: 64px 0 40px;
+  }
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent-teal);
+    background: #EAF2EF;
+    border: 1px solid #D3E4DE;
+    padding: 5px 12px;
+    border-radius: 999px;
+    margin-bottom: 20px;
+  }
+  .eyebrow .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent-coral);
+  }
+  h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: clamp(32px, 6vw, 48px);
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+  }
+  h1 .mark {
+    background: linear-gradient(to top, var(--accent-yellow) 38%, transparent 38%);
+    padding: 0 2px;
+  }
+  header p.lead {
+    margin-top: 18px;
+    max-width: 520px;
+    font-size: 16px;
+    line-height: 1.7;
+    color: var(--ink-soft);
+  }
+
+  /* ---------- 앱 그리드 ---------- */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+    padding: 20px 0 40px;
+  }
+  @media (max-width: 620px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    position: relative;
+    background: var(--paper-card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 28px 24px 24px;
+    box-shadow: 0 2px 0 rgba(35,38,43,0.04);
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+  .card:hover {
+    transform: translateY(-4px) rotate(-0.4deg);
+    box-shadow: 0 14px 24px rgba(35,38,43,0.10);
+  }
+  .card:focus-visible {
+    outline: 2px solid var(--accent-teal);
+    outline-offset: 3px;
+  }
+  .tape {
+    position: absolute;
+    top: -10px;
+    left: 28px;
+    width: 56px;
+    height: 20px;
+    background: var(--accent-yellow);
+    opacity: 0.85;
+    transform: rotate(-3deg);
+    border-radius: 2px;
+  }
+  .card .icon {
+    font-size: 30px;
+    line-height: 1;
+    margin-bottom: 14px;
+  }
+  .card h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 19px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .card p.desc {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--ink-soft);
+    margin-bottom: 18px;
+    min-height: 44px;
+  }
+  .card .cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent-teal);
+  }
+  .card .cta .arrow {
+    transition: transform 0.18s ease;
+  }
+  .card:hover .cta .arrow {
+    transform: translateX(3px);
+  }
+  .card .tags {
+    position: absolute;
+    top: 24px;
+    right: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    background: var(--paper);
+    border: 1px solid var(--line);
+    padding: 3px 8px;
+    border-radius: 999px;
+  }
+
+  /* 준비중 카드 */
+  .card.ghost {
+    background: transparent;
+    border-style: dashed;
+    box-shadow: none;
+    cursor: default;
+  }
+  .card.ghost:hover {
+    transform: none;
+    box-shadow: none;
+  }
+  .card.ghost .icon,
+  .card.ghost h2,
+  .card.ghost p.desc {
+    opacity: 0.55;
+  }
+  .card.ghost .cta {
+    color: var(--ink-soft);
+  }
+
+  footer {
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+    font-size: 13px;
+    color: var(--ink-soft);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <span class="eyebrow"><span class="dot"></span>개인 프로젝트 모음</span>
+      <h1>필요해서 <span class="mark">직접 만든</span><br>작은 도구들</h1>
+      <p class="lead">
+        거창한 서비스는 아니지만, 내가 매일 쓰려고 하나씩 만든 앱들을 모아둔 공간입니다.
+        전부 브라우저 안에서 동작하고, 데이터는 이 브라우저 안에만 저장됩니다.
+      </p>
+    </header>
+
+    <main class="grid">
+      <a class="card" href="./SimpleAhmggi.html">
+        <span class="tape"></span>
+        <span class="tags">단어장</span>
+        <div class="icon">📚</div>
+        <h2>SimpleAhmggi</h2>
+        <p class="desc">외국어 단어와 문장을 정리하고 반복 학습하는 단어장. 여러 단어장을 만들어 관리할 수 있어요.</p>
+        <span class="cta">앱 열기 <span class="arrow">→</span></span>
+      </a>
+
+      <div class="card ghost">
+        <div class="icon">🛠️</div>
+        <h2>다음 도구</h2>
+        <p class="desc">필요한 게 생기면 여기에 하나씩 추가할 예정입니다.</p>
+        <span class="cta">준비중</span>
+      </div>
+    </main>
+
+    <footer>
+      <span>손으로 하나씩 만드는 중</span>
+      <span>Made with Claude</span>
+    </footer>
+  </div>
+</body>
+</html>
