@@ -143,7 +143,12 @@
     }
     /* 표제어, 뜻, 일괄 붙여넣기 입력창에 Times New Roman 적용 */
     #wordInput, #meaningInput, #bulkInput {
-      font-family: "Times New Roman", Times, serif;
+      font-family: 
+      "Times New Roman",            /* 1순위: 헬라어, 영문, 악센트 기호 */
+      "Apple SD Gothic Neo",       /* 2순위: Mac/iPhone/iPad 한글 (애플) */
+      "Malgun Gothic",             /* 3순위: Windows 한글 (맑은 고딕) */
+      "Dotum",                     /* 4순위: 구형 Windows 한글 (돋움) */
+      sans-serif;                  /* 5순위: Android 등 기타 OS 기본 고딕체 */
     }
     input:focus, textarea:focus {
       border-color: #3498db;
