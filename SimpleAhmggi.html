@@ -4,7 +4,57 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SimpleAhmggi - 나만의 단어장</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#3498db" id="themeColorMeta">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="암기장">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="icon" href="icon-192.png">
   <style>
+    :root {
+      --bg-page: #f4f6f8;
+      --bg-surface: #ffffff;
+      --bg-input: #ffffff;
+      --text-primary: #2c3e50;
+      --text-body: #333333;
+      --text-secondary: #7f8c8d;
+      --text-faint: #aaaaaa;
+      --border-color: #dddddd;
+      --border-soft: #f0f0f0;
+      --shadow-soft: rgba(0,0,0,0.05);
+      --shadow-strong: rgba(0,0,0,0.18);
+      --shadow-modal: rgba(0,0,0,0.25);
+      --overlay-bg: rgba(0,0,0,0.45);
+      --active-tint: rgba(0,0,0,0.08);
+      --chip-bg: #ecf0f1;
+      --chip-bg-active: #dfe6e9;
+      --badge-bg: #eafaf1;
+      --badge-text: #27ae60;
+      --accent: #3498db;
+      --accent-active: #2980b9;
+    }
+    body.dark {
+      color-scheme: dark;
+      --bg-page: #1a1d21;
+      --bg-surface: #24282d;
+      --bg-input: #2b3036;
+      --text-primary: #ecf0f1;
+      --text-body: #dfe3e6;
+      --text-secondary: #9aa5ab;
+      --text-faint: #767c81;
+      --border-color: #3a3f44;
+      --border-soft: #333840;
+      --shadow-soft: rgba(0,0,0,0.3);
+      --shadow-strong: rgba(0,0,0,0.5);
+      --shadow-modal: rgba(0,0,0,0.55);
+      --overlay-bg: rgba(0,0,0,0.65);
+      --active-tint: rgba(255,255,255,0.08);
+      --chip-bg: #33383e;
+      --chip-bg-active: #3d434a;
+      --badge-bg: rgba(39,174,96,0.16);
+      --badge-text: #2ecc71;
+    }
     * { 
       box-sizing: border-box; 
       margin: 0; 
@@ -17,12 +67,13 @@
         sans-serif;                  /* 5순위: Android 등 기타 OS 기본 고딕체 */
     }
     body { 
-      background-color: #f4f6f8; 
-      color: #333; 
+      background-color: var(--bg-page); 
+      color: var(--text-body); 
       padding: 0 15px 20px; 
       display: flex; 
       flex-direction: column; 
       align-items: center; 
+      transition: background-color 0.2s ease, color 0.2s ease;
     }
     .container { 
       width: 100%; 
@@ -38,7 +89,7 @@
       padding: 12px 4px 8px;
     }
     
-    /* 메인 화면(index.html) 이동 홈 버튼 스타일 */
+    /* 메인 화면(index.html) 이동 홈 버튼 / 다크모드 버튼 공통 스타일 */
     .btn-home {
       display: inline-flex;
       align-items: center;
@@ -46,14 +97,16 @@
       text-decoration: none;
       font-size: 16px;
       padding: 4px 8px;
-      background-color: #ffffff;
-      border: 1px solid #ddd;
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-color);
       border-radius: 6px;
       flex-shrink: 0;
+      cursor: pointer;
+      color: var(--text-primary);
       transition: background-color 0.15s ease;
     }
     .btn-home:active {
-      background-color: #e2e8f0;
+      background-color: var(--active-tint);
     }
 
     .nb-emoji {
@@ -63,11 +116,11 @@
     #notebookSelect {
       font-size: 17px;
       font-weight: bold;
-      color: #2c3e50;
+      color: var(--text-primary);
       border: none;
       background: transparent;
       padding: 4px 2px;
-      max-width: 70vw;
+      max-width: 60vw;
       text-align: center;
       cursor: pointer;
     }
@@ -78,15 +131,15 @@
       position: sticky;
       top: 0;
       z-index: 100;
-      background-color: #f4f6f8;
+      background-color: var(--bg-page);
       padding-top: 0;
       margin: 0 -15px;
       padding-left: 15px;
       padding-right: 15px;
-      transition: box-shadow 0.2s ease;
+      transition: box-shadow 0.2s ease, background-color 0.2s ease;
     }
     .top-bar.stuck {
-      box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+      box-shadow: 0 4px 10px var(--shadow-soft);
     }
 
     /* 입력 영역 접기/펼치기 토글 버튼 */
@@ -98,7 +151,7 @@
       width: 100%;
       background: none;
       border: none;
-      color: #7f8c8d;
+      color: var(--text-secondary);
       font-size: 11px;
       padding: 2px 0 6px;
       cursor: pointer;
@@ -126,11 +179,12 @@
     
     /* 입력 카드 영역 */
     .card-input { 
-      background: white; 
+      background: var(--bg-surface); 
       padding: 10px; 
       border-radius: 10px; 
-      box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
+      box-shadow: 0 4px 6px var(--shadow-soft); 
       margin-bottom: 8px; 
+      transition: background-color 0.2s ease;
     }
     .input-group { 
       display: flex; 
@@ -141,13 +195,18 @@
     input, textarea { 
       width: 100%; 
       padding: 9px 10px; 
-      border: 1px solid #ddd; 
+      border: 1px solid var(--border-color); 
       border-radius: 7px; 
       font-size: 14px; 
       outline: none;
+      background: var(--bg-input);
+      color: var(--text-body);
+    }
+    input::placeholder, textarea::placeholder {
+      color: var(--text-faint);
     }
     input:focus, textarea:focus {
-      border-color: #3498db;
+      border-color: var(--accent);
     }
     /* 뜻 입력란: 예문 입력을 위해 더 넓은 높이 확보 */
     textarea {
@@ -159,7 +218,7 @@
     .btn-add { 
       width: 100%; 
       padding: 9px; 
-      background: #3498db; 
+      background: var(--accent); 
       color: white; 
       border: none; 
       border-radius: 7px; 
@@ -168,7 +227,7 @@
       cursor: pointer; 
     }
     .btn-add:active { 
-      background: #2980b9; 
+      background: var(--accent-active); 
     }
 
     /* 여러 단어 한번에 붙여넣기 토글 버튼 */
@@ -176,7 +235,7 @@
       width: 100%;
       background: none;
       border: none;
-      color: #3498db;
+      color: var(--accent);
       font-size: 12px;
       font-weight: bold;
       padding: 8px 0 2px;
@@ -192,7 +251,7 @@
     }
     .bulk-hint {
       font-size: 11px;
-      color: #aaa;
+      color: var(--text-faint);
       margin: 2px 2px 6px;
       line-height: 1.4;
     }
@@ -235,6 +294,43 @@
       display: block;
     }
 
+    /* 검색 영역 */
+    .search-row {
+      position: relative;
+      margin-bottom: 8px;
+    }
+    #searchInput {
+      width: 100%;
+      padding: 9px 34px 9px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 13px;
+      background: var(--bg-surface);
+      color: var(--text-body);
+      box-shadow: 0 2px 4px var(--shadow-soft);
+    }
+    .search-clear {
+      display: none;
+      position: absolute;
+      right: 6px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 15px;
+      padding: 4px 6px;
+      cursor: pointer;
+    }
+    .search-clear.show {
+      display: block;
+    }
+    .search-result-count {
+      font-size: 11px;
+      color: var(--text-faint);
+      padding: 4px 2px 0;
+    }
+
     /* 단어 리스트 영역 */
     .word-list { 
       display: flex; 
@@ -243,15 +339,16 @@
       margin-top: 4px;
     }
     .word-item { 
-      background: white; 
+      background: var(--bg-surface); 
       padding: 12px; 
       border-radius: 10px; 
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+      box-shadow: 0 2px 4px var(--shadow-soft); 
       display: flex; 
       justify-content: space-between; 
       align-items: center; 
       cursor: pointer; 
       word-break: break-word; /* 긴 문장 자동 줄바꿈 */
+      transition: background-color 0.2s ease;
     }
     .word-content {
       flex: 1;
@@ -267,12 +364,12 @@
     .word { 
       font-weight: bold; 
       font-size: 16px; 
-      color: #2c3e50; 
+      color: var(--text-primary); 
     }
     .study-badge {
       font-size: 11px;
-      background: #eafaf1;
-      color: #27ae60;
+      background: var(--badge-bg);
+      color: var(--badge-text);
       padding: 2px 7px;
       border-radius: 10px;
       font-weight: bold;
@@ -280,7 +377,7 @@
     }
     .meaning { 
       font-size: 14px; 
-      color: #7f8c8d; 
+      color: var(--text-secondary); 
       display: none; 
       margin-top: 5px;
       white-space: pre-wrap; /* 줄바꿈 유지 */
@@ -295,7 +392,7 @@
     }
     .option-btn {
       background: transparent;
-      color: #95a5a6;
+      color: var(--text-secondary);
       border: none;
       padding: 4px 8px;
       border-radius: 6px;
@@ -306,7 +403,7 @@
       line-height: 1;
     }
     .option-btn:active {
-      background: rgba(0,0,0,0.08);
+      background: var(--active-tint);
     }
     .option-menu {
       display: none;
@@ -314,9 +411,9 @@
       top: 100%;
       left: 0;
       margin-top: 4px;
-      background: white;
+      background: var(--bg-surface);
       border-radius: 8px;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+      box-shadow: 0 4px 14px var(--shadow-strong);
       overflow: hidden;
       z-index: 60;
       min-width: 96px;
@@ -335,24 +432,24 @@
       display: block;
       width: 100%;
       padding: 11px 14px;
-      background: white;
+      background: var(--bg-surface);
       border: none;
       font-size: 14px;
       font-weight: bold;
       text-align: left;
       cursor: pointer;
-      color: #2c3e50;
+      color: var(--text-primary);
       white-space: nowrap;
     }
     .option-item:active {
-      background: #f0f2f5;
+      background: var(--active-tint);
     }
     .option-item.danger {
       color: #e74c3c;
-      border-top: 1px solid #f0f0f0;
+      border-top: 1px solid var(--border-soft);
     }
     .option-item.danger:active {
-      background: rgba(231, 76, 60, 0.1);
+      background: rgba(231, 76, 60, 0.12);
     }
 
     /* 단어 수정 모달 */
@@ -360,7 +457,7 @@
       display: none;
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.45);
+      background: var(--overlay-bg);
       z-index: 300;
       align-items: center;
       justify-content: center;
@@ -370,17 +467,17 @@
       display: flex;
     }
     .modal-box {
-      background: white;
+      background: var(--bg-surface);
       border-radius: 12px;
       padding: 16px;
       width: 100%;
       max-width: 420px;
-      box-shadow: 0 10px 28px rgba(0,0,0,0.25);
+      box-shadow: 0 10px 28px var(--shadow-modal);
     }
     .modal-title {
       font-size: 15px;
       font-weight: bold;
-      color: #2c3e50;
+      color: var(--text-primary);
       margin-bottom: 10px;
     }
     .modal-actions {
@@ -398,18 +495,18 @@
       cursor: pointer;
     }
     .btn-modal-cancel {
-      background: #ecf0f1;
-      color: #555;
+      background: var(--chip-bg);
+      color: var(--text-secondary);
     }
     .btn-modal-cancel:active {
-      background: #dfe4e6;
+      background: var(--chip-bg-active);
     }
     .btn-modal-save {
-      background: #3498db;
+      background: var(--accent);
       color: white;
     }
     .btn-modal-save:active {
-      background: #2980b9;
+      background: var(--accent-active);
     }
     /* 외웠어요 버튼: 원래 삭제 버튼이 있던 오른쪽 자리 */
     .study-btn {
@@ -430,14 +527,15 @@
 
     /* 정렬 / 숨기기 컨트롤 바 */
     .control-bar {
-      background: white;
+      background: var(--bg-surface);
       padding: 10px;
       border-radius: 10px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      box-shadow: 0 2px 4px var(--shadow-soft);
       margin-bottom: 8px;
       display: flex;
       flex-direction: column;
       gap: 8px;
+      transition: background-color 0.2s ease;
     }
     .sort-row {
       display: flex;
@@ -447,7 +545,7 @@
     }
     .control-label {
       font-size: 12px;
-      color: #7f8c8d;
+      color: var(--text-secondary);
       font-weight: bold;
       flex-shrink: 0;
     }
@@ -455,15 +553,15 @@
       flex: 1;
       min-width: 84px;
       padding: 7px 6px;
-      border: 1px solid #ddd;
+      border: 1px solid var(--border-color);
       border-radius: 6px;
       font-size: 13px;
-      background: white;
-      color: #333;
+      background: var(--bg-input);
+      color: var(--text-body);
     }
     .btn-sortdir {
-      background: #ecf0f1;
-      color: #2c3e50;
+      background: var(--chip-bg);
+      color: var(--text-primary);
       border: none;
       padding: 7px 9px;
       border-radius: 6px;
@@ -474,7 +572,7 @@
       flex-shrink: 0;
     }
     .btn-sortdir:active {
-      background: #dfe6e9;
+      background: var(--chip-bg-active);
     }
     .btn-shuffle {
       background: #34495e;
@@ -497,7 +595,7 @@
       justify-content: space-between;
       gap: 6px;
       flex-wrap: wrap;
-      border-top: 1px solid #eee;
+      border-top: 1px solid var(--border-soft);
       padding-top: 8px;
     }
     .hide-toggle {
@@ -505,7 +603,7 @@
       align-items: center;
       gap: 6px;
       font-size: 12px;
-      color: #555;
+      color: var(--text-secondary);
       cursor: pointer;
       flex-wrap: wrap;
     }
@@ -516,14 +614,16 @@
     #hideThreshold {
       width: 48px;
       padding: 4px 4px;
-      border: 1px solid #ddd;
+      border: 1px solid var(--border-color);
       border-radius: 5px;
       font-size: 12px;
       text-align: center;
+      background: var(--bg-input);
+      color: var(--text-body);
     }
     .hide-count {
       font-size: 11px;
-      color: #aaa;
+      color: var(--text-faint);
       white-space: nowrap;
     }
   </style>
@@ -535,6 +635,7 @@
     <div class="top-bar" id="topBar">
       <div class="notebook-select-wrap">
         <a href="./index.html" class="btn-home" title="메인 화면으로 이동">🏠</a>
+        <button class="btn-home" id="darkModeBtn" onclick="toggleDarkMode()" title="다크모드 전환">🌙</button>
         <span class="nb-emoji">📝</span>
         <select id="notebookSelect" onchange="handleNotebookSelect(this.value)"></select>
       </div>
@@ -580,6 +681,10 @@
 
       <!-- 정렬 / 숨기기 컨트롤: top-bar 안에 넣어 스크롤해도 항상 고정되도록 함 -->
       <div class="control-bar">
+        <div class="search-row">
+          <input type="text" id="searchInput" placeholder="🔍 단어 또는 뜻 검색" oninput="handleSearchInput(this.value)">
+          <button class="search-clear" id="searchClearBtn" onclick="clearSearch()">✕</button>
+        </div>
         <div class="sort-row">
           <span class="control-label">정렬</span>
           <select id="sortField" onchange="handleSortFieldChange(this.value)">
@@ -697,6 +802,8 @@
     let sortDir = 'asc';        // asc | desc
     let hideEnabled = false;
     let hideThreshold = 5;
+    let searchQuery = '';
+    let darkMode = false;
 
     function escapeHtml(str) {
       return String(str).replace(/[&<>"']/g, s => ({
@@ -740,6 +847,8 @@
       hideThreshold = (ht && ht.value) ? ht.value : 5;
       const ic = await idbGet('settings', 'inputCollapsed');
       inputCollapsed = ic ? !!ic.value : false;
+      const dm = await idbGet('settings', 'darkMode');
+      darkMode = dm ? !!dm.value : false;
 
       persistNotebooks();
       saveSetting('activeNotebook', activeNotebook);
@@ -923,8 +1032,43 @@
     function deleteWord(e, id) {
       e.stopPropagation();
       closeAllOptionMenus();
+      const target = getWords().find(item => item.id === id);
+      const label = target ? `'${target.word}'` : '이 단어';
+      if (!confirm(`${label}를 삭제할까요?\n이 작업은 되돌릴 수 없습니다.`)) return;
       notebooks[activeNotebook] = getWords().filter(w => w.id !== id);
       saveAll();
+    }
+
+    // ---------- 검색 ----------
+    function handleSearchInput(value) {
+      searchQuery = value.trim().toLowerCase();
+      const clearBtn = document.getElementById('searchClearBtn');
+      if (clearBtn) clearBtn.classList.toggle('show', searchQuery.length > 0);
+      render();
+    }
+
+    function clearSearch() {
+      searchQuery = '';
+      const input = document.getElementById('searchInput');
+      if (input) input.value = '';
+      const clearBtn = document.getElementById('searchClearBtn');
+      if (clearBtn) clearBtn.classList.remove('show');
+      render();
+    }
+
+    // ---------- 다크모드 ----------
+    function applyDarkMode() {
+      document.body.classList.toggle('dark', darkMode);
+      const btn = document.getElementById('darkModeBtn');
+      if (btn) btn.textContent = darkMode ? '☀️' : '🌙';
+      const themeMeta = document.getElementById('themeColorMeta');
+      if (themeMeta) themeMeta.setAttribute('content', darkMode ? '#1a1d21' : '#3498db');
+    }
+
+    function toggleDarkMode() {
+      darkMode = !darkMode;
+      saveSetting('darkMode', darkMode);
+      applyDarkMode();
     }
 
     // ---------- 수정/삭제 드롭다운 메뉴 ----------
@@ -1287,18 +1431,30 @@
     function render() {
       const list = document.getElementById('wordList');
       const allWords = getWords();
-      const words = hideEnabled
+      const hideFiltered = hideEnabled
         ? allWords.filter(w => (w.studyCount || 0) < hideThreshold)
         : allWords;
 
       const hideCountEl = document.getElementById('hideCount');
-      const hiddenCount = allWords.length - words.length;
+      const hiddenCount = allWords.length - hideFiltered.length;
       if (hideCountEl) {
         hideCountEl.textContent = (hideEnabled && hiddenCount > 0) ? `🙈 ${hiddenCount}개 숨김` : '';
       }
 
-      if (words.length === 0 && allWords.length > 0) {
-        list.innerHTML = `<div style="text-align:center; color:#aaa; font-size:13px; padding:20px 0;">조건에 맞는 단어가 모두 숨겨졌습니다.</div>`;
+      const words = searchQuery
+        ? hideFiltered.filter(w =>
+            w.word.toLowerCase().includes(searchQuery) ||
+            w.meaning.toLowerCase().includes(searchQuery)
+          )
+        : hideFiltered;
+
+      if (hideFiltered.length === 0 && allWords.length > 0) {
+        list.innerHTML = `<div style="text-align:center; color:var(--text-faint); font-size:13px; padding:20px 0;">조건에 맞는 단어가 모두 숨겨졌습니다.</div>`;
+        return;
+      }
+
+      if (words.length === 0 && searchQuery) {
+        list.innerHTML = `<div style="text-align:center; color:var(--text-faint); font-size:13px; padding:20px 0;">'${escapeHtml(searchQuery)}'에 대한 검색 결과가 없습니다.</div>`;
         return;
       }
 
@@ -1323,10 +1479,12 @@
       `).join('');
     }
 
+
     async function initApp() {
       try {
         db = await openDB();
         await loadData();
+        applyDarkMode();
         renderNotebookSelect();
         applyCollapsedState();
         initSortAndHideControls();
@@ -1338,6 +1496,13 @@
       }
     }
     initApp();
+
+    // ---------- PWA: 서비스워커 등록 (http/https로 서빙되는 경우에만 동작. file://에서는 건너뜀) ----------
+    if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./service-worker.js').catch(() => { /* 서비스워커 미지원 환경은 무시 */ });
+      });
+    }
   </script>
 </body>
 </html>
