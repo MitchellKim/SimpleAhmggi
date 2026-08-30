@@ -324,6 +324,13 @@
     .option-menu.open {
       display: block;
     }
+    /* 화면 하단에 가까워 아래로 펼치면 잘릴 때는 버튼 위쪽으로 펼침 */
+    .option-menu.open-up {
+      top: auto;
+      bottom: 100%;
+      margin-top: 0;
+      margin-bottom: 4px;
+    }
     .option-item {
       display: block;
       width: 100%;
@@ -922,7 +929,10 @@
 
     // ---------- 수정/삭제 드롭다운 메뉴 ----------
     function closeAllOptionMenus() {
-      document.querySelectorAll('.option-menu.open').forEach(m => m.classList.remove('open'));
+      document.querySelectorAll('.option-menu.open').forEach(m => {
+        m.classList.remove('open');
+        m.classList.remove('open-up');
+      });
     }
 
     function toggleOptionMenu(e, id) {
@@ -930,7 +940,15 @@
       const menu = document.getElementById(`optionMenu-${id}`);
       const isOpen = menu.classList.contains('open');
       closeAllOptionMenus();
-      if (!isOpen) menu.classList.add('open');
+      if (!isOpen) {
+        menu.classList.add('open');
+        // 메뉴가 화면 아래로 넘치면 버튼 위쪽으로 펼치도록 위치 보정
+        menu.classList.remove('open-up');
+        const rect = menu.getBoundingClientRect();
+        if (rect.bottom > window.innerHeight) {
+          menu.classList.add('open-up');
+        }
+      }
     }
 
     // 메뉴 바깥을 탭하면 열려있는 드롭다운 메뉴를 닫음
