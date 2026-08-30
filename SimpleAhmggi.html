@@ -288,21 +288,121 @@
     .word-item.show .meaning { 
       display: block; 
     }
-    /* 삭제 버튼: 표제어 맨 앞(왼쪽)으로 이동해서 오른쪽 '외웠어요'와 헷갈리지 않게 함 */
-    .delete-btn { 
-      background: transparent; 
-      color: #e74c3c; 
-      border: none; 
-      padding: 4px 8px; 
-      border-radius: 6px; 
-      font-size: 17px; 
-      font-weight: bold;
-      width: auto; 
+    /* 옵션(수정/삭제) 버튼: 표제어 맨 앞(왼쪽)에 위치, 눌러야 메뉴가 뜨도록 해서 실수 방지 */
+    .option-wrap {
+      position: relative;
       flex-shrink: 0;
+    }
+    .option-btn {
+      background: transparent;
+      color: #95a5a6;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 18px;
+      font-weight: bold;
+      width: auto;
+      cursor: pointer;
+      line-height: 1;
+    }
+    .option-btn:active {
+      background: rgba(0,0,0,0.08);
+    }
+    .option-menu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      margin-top: 4px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+      overflow: hidden;
+      z-index: 60;
+      min-width: 96px;
+    }
+    .option-menu.open {
+      display: block;
+    }
+    .option-item {
+      display: block;
+      width: 100%;
+      padding: 11px 14px;
+      background: white;
+      border: none;
+      font-size: 14px;
+      font-weight: bold;
+      text-align: left;
+      cursor: pointer;
+      color: #2c3e50;
+      white-space: nowrap;
+    }
+    .option-item:active {
+      background: #f0f2f5;
+    }
+    .option-item.danger {
+      color: #e74c3c;
+      border-top: 1px solid #f0f0f0;
+    }
+    .option-item.danger:active {
+      background: rgba(231, 76, 60, 0.1);
+    }
+
+    /* 단어 수정 모달 */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 300;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.open {
+      display: flex;
+    }
+    .modal-box {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 10px 28px rgba(0,0,0,0.25);
+    }
+    .modal-title {
+      font-size: 15px;
+      font-weight: bold;
+      color: #2c3e50;
+      margin-bottom: 10px;
+    }
+    .modal-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .btn-modal-cancel, .btn-modal-save {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 7px;
+      font-weight: bold;
+      font-size: 14px;
       cursor: pointer;
     }
-    .delete-btn:active {
-      background: rgba(231, 76, 60, 0.12);
+    .btn-modal-cancel {
+      background: #ecf0f1;
+      color: #555;
+    }
+    .btn-modal-cancel:active {
+      background: #dfe4e6;
+    }
+    .btn-modal-save {
+      background: #3498db;
+      color: white;
+    }
+    .btn-modal-save:active {
+      background: #2980b9;
     }
     /* 외웠어요 버튼: 원래 삭제 버튼이 있던 오른쪽 자리 */
     .study-btn {
@@ -495,6 +595,21 @@
 
     <!-- 단어 리스트 -->
     <div class="word-list" id="wordList"></div>
+  </div>
+
+  <!-- 단어 수정 모달 -->
+  <div class="modal-overlay" id="editModalOverlay" onclick="closeEditModal()">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <div class="modal-title">✏️ 단어 수정</div>
+      <div class="input-group">
+        <input type="text" id="editWordInput" placeholder="표제어">
+        <textarea id="editMeaningInput" placeholder="뜻 / 예문"></textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-modal-cancel" onclick="closeEditModal()">취소</button>
+        <button class="btn-modal-save" onclick="saveEditModal()">저장</button>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -800,7 +915,56 @@
 
     function deleteWord(e, id) {
       e.stopPropagation();
+      closeAllOptionMenus();
       notebooks[activeNotebook] = getWords().filter(w => w.id !== id);
+      saveAll();
+    }
+
+    // ---------- 수정/삭제 드롭다운 메뉴 ----------
+    function closeAllOptionMenus() {
+      document.querySelectorAll('.option-menu.open').forEach(m => m.classList.remove('open'));
+    }
+
+    function toggleOptionMenu(e, id) {
+      e.stopPropagation();
+      const menu = document.getElementById(`optionMenu-${id}`);
+      const isOpen = menu.classList.contains('open');
+      closeAllOptionMenus();
+      if (!isOpen) menu.classList.add('open');
+    }
+
+    // 메뉴 바깥을 탭하면 열려있는 드롭다운 메뉴를 닫음
+    document.addEventListener('click', () => closeAllOptionMenus());
+
+    // ---------- 단어 수정 모달 ----------
+    let editingId = null;
+
+    function openEditModal(e, id) {
+      e.stopPropagation();
+      closeAllOptionMenus();
+      const w = getWords().find(item => item.id === id);
+      if (!w) return;
+      editingId = id;
+      document.getElementById('editWordInput').value = w.word;
+      document.getElementById('editMeaningInput').value = w.meaning;
+      document.getElementById('editModalOverlay').classList.add('open');
+    }
+
+    function closeEditModal() {
+      editingId = null;
+      document.getElementById('editModalOverlay').classList.remove('open');
+    }
+
+    function saveEditModal() {
+      const wordVal = document.getElementById('editWordInput').value.trim();
+      const meaningVal = document.getElementById('editMeaningInput').value.trim();
+      if (!wordVal || !meaningVal) return alert('단어와 뜻을 모두 입력해주세요.');
+      const w = getWords().find(item => item.id === editingId);
+      if (w) {
+        w.word = wordVal;
+        w.meaning = meaningVal;
+      }
+      closeEditModal();
       saveAll();
     }
 
@@ -1122,7 +1286,13 @@
 
       list.innerHTML = words.map(w => `
         <div class="word-item" id="word-${w.id}" onclick="toggleShow(${w.id})">
-          <button class="delete-btn" onclick="deleteWord(event, ${w.id})">✕</button>
+          <div class="option-wrap" onclick="event.stopPropagation()">
+            <button class="option-btn" onclick="toggleOptionMenu(event, ${w.id})">⋮</button>
+            <div class="option-menu" id="optionMenu-${w.id}">
+              <button class="option-item" onclick="openEditModal(event, ${w.id})">✏️ 수정</button>
+              <button class="option-item danger" onclick="deleteWord(event, ${w.id})">🗑 삭제</button>
+            </div>
+          </div>
           <div class="word-content">
             <div class="word-row">
               <span class="word">${escapeHtml(w.word)}</span>
