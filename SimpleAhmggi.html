@@ -644,7 +644,7 @@
         <!-- 세로 정렬 및 큰 입력창 카드로 변경 -->
         <div class="card-input">
           <div class="input-group">
-            <input type="text" id="wordInput" placeholder="단어 또는 표제어 (예: Non lo so.)">
+            <input type="text" id="wordInput" placeholder="단어 또는 표제어 (예: Non lo so.)" title="단축키: Alt+1">
             <textarea id="meaningInput" placeholder="뜻 및 예문 (예: 나는 그것을 모른다.)"></textarea>
           </div>
           <button class="btn-add" onclick="addWord()">단어 추가하기</button>
@@ -682,7 +682,7 @@
       <!-- 정렬 / 숨기기 컨트롤: top-bar 안에 넣어 스크롤해도 항상 고정되도록 함 -->
       <div class="control-bar">
         <div class="search-row">
-          <input type="text" id="searchInput" placeholder="🔍 단어 또는 뜻 검색" oninput="handleSearchInput(this.value)">
+          <input type="text" id="searchInput" placeholder="🔍 단어 또는 뜻 검색" title="단축키: Alt+2" oninput="handleSearchInput(this.value)">
           <button class="search-clear" id="searchClearBtn" onclick="clearSearch()">✕</button>
         </div>
         <div class="sort-row">
@@ -938,6 +938,26 @@
     window.addEventListener('scroll', () => {
       const topBar = document.getElementById('topBar');
       topBar.classList.toggle('stuck', window.scrollY > 0);
+    });
+
+    // ---------- 단축키: 현재 포커스 위치와 상관없이 표제어/검색 입력창으로 바로 이동 ----------
+    // Alt+1 : 표제어(단어) 입력창 포커스 (입력 영역이 접혀있으면 자동으로 펼침)
+    // Alt+2 : 검색 입력창 포커스 (기존 검색어는 전체 선택되어 바로 새로 입력 가능)
+    document.addEventListener('keydown', (e) => {
+      if (!e.altKey || e.ctrlKey || e.metaKey) return;
+
+      if (e.code === 'Digit1') {
+        e.preventDefault();
+        if (inputCollapsed) toggleInputArea(); // 접혀 있으면 펼치기
+        const wordInputEl = document.getElementById('wordInput');
+        wordInputEl.focus();
+        wordInputEl.select();
+      } else if (e.code === 'Digit2') {
+        e.preventDefault();
+        const searchInputEl = document.getElementById('searchInput');
+        searchInputEl.focus();
+        searchInputEl.select();
+      }
     });
 
     // ---------- 고유 ID 생성 ----------
