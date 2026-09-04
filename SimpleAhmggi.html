@@ -303,9 +303,8 @@
       width: 100%;
     }
     .save-menu-wrap .option-menu {
-      left: 0;
-      right: 0;
-      min-width: 100%;
+      position: fixed;
+      min-width: 100px;
     }
     .save-menu-wrap .option-item {
       text-align: center;
@@ -1271,11 +1270,18 @@
       const isOpen = menu.classList.contains('open');
       closeAllOptionMenus();
       if (!isOpen) {
+        const btn = e.currentTarget;
+        const btnRect = btn.getBoundingClientRect();
+        // 부모(.collapsible)에 overflow:hidden이 걸려있어 absolute로는 잘려 보이므로
+        // 화면(viewport) 기준 고정 위치(fixed)로 버튼 아래에 직접 배치한다.
+        menu.style.left = btnRect.left + 'px';
+        menu.style.width = btnRect.width + 'px';
+        menu.style.top = (btnRect.bottom + 4) + 'px';
         menu.classList.add('open');
-        menu.classList.remove('open-up');
-        const rect = menu.getBoundingClientRect();
-        if (rect.bottom > window.innerHeight) {
-          menu.classList.add('open-up');
+
+        const menuHeight = menu.offsetHeight;
+        if (btnRect.bottom + 4 + menuHeight > window.innerHeight) {
+          menu.style.top = (btnRect.top - menuHeight - 4) + 'px';
         }
       }
     }
